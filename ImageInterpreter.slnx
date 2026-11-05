@@ -1,3 +1,7 @@
 <Solution>
+  <Project Path="ImageInterpreter.Application/ImageInterpreter.Application.csproj" />
+  <Project Path="ImageInterpreter.Domain/ImageInterpreter.Domain.csproj" />
+  <Project Path="ImageInterpreter.Infrastructure/ImageInterpreter.Infrastructure.csproj" />
+  <Project Path="ImageInterpreter.Tests/ImageInterpreter.Tests.csproj" />
   <Project Path="ImageInterpreter/ImageInterpreter.csproj" />
 </Solution>
