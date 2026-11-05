@@ -1,0 +1,25 @@
+---
+description: Layer boundaries, spec-first changes, and no secrets in the repo
+alwaysApply: true
+---
+
+# Architecture
+
+Keep the layers below. Swapping the vision provider must not change the HTTP contract.
+
+- **Api**: JWT authentication, file validation, and the versioned HTTP contract.
+- **Application**: the `InterpretImage` use case.
+- **Domain**: `Interpretation`, detected objects, extracted text, and confidence. Domain stays free of ASP.NET types and model SDK types.
+- **Infrastructure**: the only place that calls the LLM, behind the port `IVisionInterpreter`.
+
+`docs/specs` is the source of truth. Update the spec before changing behavior. Do not invent schema fields outside `docs/specs/003-api-contracts.md` and `docs/specs/004-data-model.md`.
+
+v1 is stateless, with no database and no chosen LLM vendor. Do not commit secrets, including API keys, private keys, tokens, or `.env` files.
+
+```csharp
+// Invalid: Domain references an ASP.NET type and an LLM SDK type
+using Microsoft.AspNetCore.Http;
+using SomeModelSdk;
+
+public sealed record Interpretation(IFormFile Image, VisionClient Client);
+```

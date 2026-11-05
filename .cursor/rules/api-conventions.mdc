@@ -1,0 +1,32 @@
+---
+description: Versioned /api/v1 routes, stable JSON, and RFC 7807 errors
+globs: ImageInterpreter/**/*Controller.cs, ImageInterpreter/**/Contracts/**/*.cs, docs/specs/003-api-contracts.md
+alwaysApply: false
+---
+
+# API conventions
+
+Put product routes under `/api/v1`. Interpret an image with `POST /api/v1/interpretations`.
+
+- Require `Authorization: Bearer` and the scope `interpretations:write`.
+- Accept `multipart/form-data` with one `image` file: JPEG, PNG, or WebP, up to 10 MB.
+- Return `200` with this stable JSON: `id`, `summary`, `objects[]` (`label`, `confidence`, `description`), `extractedText[]` (`text`, `confidence`), overall `confidence` from 0 to 1, `model.provider`, and `model.name`.
+- For failures, use only `400`, `401`, `403`, `413`, `415`, `422`, or `503`.
+- Send errors as RFC 7807 problem details. Do not add schema fields that `docs/specs/003-api-contracts.md` and `docs/specs/004-data-model.md` do not define.
+
+Bad: a custom error body and a field outside the contract.
+
+```json
+{ "message": "file too large", "vendor": "some-model" }
+```
+
+Good: RFC 7807 problem details and an allowed status.
+
+```json
+{
+  "type": "about:blank",
+  "title": "Payload Too Large",
+  "status": 413,
+  "detail": "The image is larger than 10 MB."
+}
+```

@@ -1,0 +1,19 @@
+---
+description: xUnit tests, one acceptance criterion each, LLM only behind a fake
+globs: **/*Tests/**/*.cs, **/*.Tests.cs
+alwaysApply: false
+---
+
+# Testing
+
+Use xUnit. Cover one acceptance criterion per test. Include the criterion id `AC-00N` in the test name.
+
+Reach the LLM only through a fake of `IVisionInterpreter`. Do not call a real model. Tests must not need a database or a chosen vendor.
+
+```csharp
+[Fact(DisplayName = "AC-001 returns id, summary, objects, and extracted text")]
+public async Task Returns_interpretation_for_a_valid_image()
+{
+    IVisionInterpreter vision = new FakeVisionInterpreter();
+}
+```
