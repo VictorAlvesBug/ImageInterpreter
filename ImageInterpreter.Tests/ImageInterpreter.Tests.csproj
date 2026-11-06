@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ImageInterpreter.Domain\ImageInterpreter.Domain.csproj" />
+    <ProjectReference Include="..\ImageInterpreter.Application\ImageInterpreter.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>
