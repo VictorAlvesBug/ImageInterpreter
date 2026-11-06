@@ -1,33 +1,34 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace ImageInterpreter.Tests;
 
+[Collection(JwtHostCollection.Name)]
 public class Ac030Tests
 {
     private const string Id = "7c9e6679-7425-40de-944b-e07fc1f90ae7";
     private const string CollectionPath = "/api/v1/interpretations";
 
+    private readonly JwtHostFixture _host;
+
+    public Ac030Tests(JwtHostFixture host)
+    {
+        _host = host;
+    }
+
     [Fact(DisplayName = "AC-030 the id cannot be fetched later")]
     public async Task AC030_the_id_cannot_be_fetched_later()
     {
-        await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-            builder.UseEnvironment("Testing"));
-        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
-        {
-            AllowAutoRedirect = false,
-            BaseAddress = new Uri("http://localhost"),
-        });
+        using var client = _host.CreateClient();
 
         var idPath = $"{CollectionPath}/{Id}";
 
         foreach (var method in new[] { HttpMethod.Get, HttpMethod.Put, HttpMethod.Patch, HttpMethod.Delete, HttpMethod.Head })
         {
-            var response = await SendAsync(client, factory, method, CollectionPath);
+            var response = await SendAsync(client, _host.Factory, method, CollectionPath);
             AssertProblem(
                 response,
                 405,
@@ -40,15 +41,15 @@ public class Ac030Tests
 
         foreach (var method in new[] { HttpMethod.Get, HttpMethod.Post, HttpMethod.Put, HttpMethod.Patch, HttpMethod.Delete, HttpMethod.Head })
         {
-            var response = await SendAsync(client, factory, method, idPath);
+            var response = await SendAsync(client, _host.Factory, method, idPath);
             AssertNotFound(response, idPath);
         }
 
-        var withQuery = await SendAsync(client, factory, HttpMethod.Get, $"{idPath}?ignored=1");
+        var withQuery = await SendAsync(client, _host.Factory, HttpMethod.Get, $"{idPath}?ignored=1");
         AssertNotFound(withQuery, idPath);
 
         var malformedId = $"{CollectionPath}/not-a-uuid";
-        var malformed = await SendAsync(client, factory, HttpMethod.Get, malformedId);
+        var malformed = await SendAsync(client, _host.Factory, HttpMethod.Get, malformedId);
         AssertNotFound(malformed, malformedId);
     }
 

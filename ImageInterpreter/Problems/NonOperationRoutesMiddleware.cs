@@ -1,12 +1,9 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ImageInterpreter.Problems;
 
 public sealed class NonOperationRoutesMiddleware
 {
-    private const string ProblemMediaType = "application/problem+json";
-
     private static readonly PathString CollectionPath = new("/api/v1/interpretations");
 
     private readonly RequestDelegate _next;
@@ -71,16 +68,13 @@ public sealed class NonOperationRoutesMiddleware
     private static string InstanceOf(HttpContext context) =>
         context.Request.Path.Value ?? string.Empty;
 
-    private static async Task WriteAsync(HttpContext context, ProblemDetails problem, bool allowPost)
+    private static Task WriteAsync(HttpContext context, ProblemDetails problem, bool allowPost)
     {
-        context.Response.StatusCode = problem.Status ?? throw new InvalidOperationException("Problem status is required.");
-        context.Response.ContentType = ProblemMediaType;
-
         if (allowPost)
         {
             context.Response.Headers["Allow"] = "POST";
         }
 
-        await JsonSerializer.SerializeAsync(context.Response.Body, problem, cancellationToken: context.RequestAborted);
+        return ProblemJson.WriteAsync(context, problem);
     }
 }
